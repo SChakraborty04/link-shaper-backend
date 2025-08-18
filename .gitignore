@@ -1,0 +1,44 @@
+# IDE and editor folders
+.idea/
+.vscode/
+
+# Build and binary files
+*.o
+*.obj
+*.exe
+*.out
+*.log
+*.dll
+*.so
+*.a
+
+# Dependency and package folders
+/cpp-httplib-master
+/json-develop
+/PicoSHA2-master
+/jwt-cpp-master
+/sqllite
+
+# SQLite database files
+*.db
+*.db-journal
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*~
+*.swp
+*.bak
+
+# Docker artifacts
+*.pid
+
+# Test and coverage outputs
+coverage/
+*.gcda
+*.gcno
+
+#zip files
+*.zip
