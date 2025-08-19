@@ -15,6 +15,11 @@ A simple, secure, and fast URL shortener backend built in C++ using [cpp-httplib
 - Easily deployable behind NGINX/Cloudflare for HTTPS
 
 ---
+### Demo Website 
+ - https://link-shaper-ui.lovable.app
+ - Demo email: test@test.com
+ - Demo Password: 123456
+---
 
 ## Build Instructions
 
