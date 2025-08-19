@@ -273,7 +273,81 @@ int main(int argc, char const *argv[]){
         }
         res.set_content(jsonResponse.dump(), "application/json");
     });
+    server.Get("/allurls", [&](const Request& req, Response& res) {
+        json jsonResponse;
+        std::vector<json> urls;
 
+        // JWT authentication
+        string authHeader;
+        try {
+            authHeader = req.get_header_value("Authorization");
+        } catch (...) {
+            jsonResponse["error"] = "Missing Authorization header";
+            jsonResponse["status"] = 401;
+            res.set_content(jsonResponse.dump(), "application/json");
+            return;
+        }
+        if (authHeader.substr(0,7) != "Bearer ") {
+            jsonResponse["error"] = "Missing or invalid token";
+            jsonResponse["status"] = 401;
+            res.set_content(jsonResponse.dump(), "application/json");
+            return;
+        }
+        string token = authHeader.substr(7);
+        string userEmail;
+        try {
+            auto decoded = jwt::decode(token);
+            auto verifier = jwt::verify()
+                .allow_algorithm(jwt::algorithm::hs256{"PleaseShortMyURL!"})
+                .with_issuer("urlshortener");
+            verifier.verify(decoded);
+            userEmail = decoded.get_payload_claim("email").as_string();
+        } catch (const std::exception& e) {
+            jsonResponse["error"] = "Invalid or expired token";
+            jsonResponse["status"] = 401;
+            res.set_content(jsonResponse.dump(), "application/json");
+            return;
+        }
+
+        // Get user id from email
+        int userId = -1;
+        std::string getUserIdSql = "SELECT id FROM users WHERE email = ?;";
+        sqlite3_stmt* userIdStmt;
+        if (sqlite3_prepare_v2(DB, getUserIdSql.c_str(), -1, &userIdStmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_text(userIdStmt, 1, userEmail.c_str(), -1, SQLITE_TRANSIENT);
+            if (sqlite3_step(userIdStmt) == SQLITE_ROW) {
+                userId = sqlite3_column_int(userIdStmt, 0);
+            }
+            sqlite3_finalize(userIdStmt);
+        }
+        if (userId == -1) {
+            jsonResponse["error"] = "User not found";
+            jsonResponse["status"] = 404;
+            res.set_content(jsonResponse.dump(), "application/json");
+            return;
+        }
+
+        // Query all URLs for this user
+        std::string sql = "SELECT shortUrl, longUrl, visits FROM urls WHERE user = ?;";
+        sqlite3_stmt* stmt;
+        if (sqlite3_prepare_v2(DB, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_int(stmt, 1, userId);
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                json urlObj;
+                urlObj["shortUrl"] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+                urlObj["longUrl"] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+                urlObj["visits"] = sqlite3_column_int(stmt, 2);
+                urls.push_back(urlObj);
+            }
+            sqlite3_finalize(stmt);
+            jsonResponse["urls"] = urls;
+            jsonResponse["status"] = 200;
+        } else {
+            jsonResponse["error"] = "DB error";
+            jsonResponse["status"] = 500;
+        }
+        res.set_content(jsonResponse.dump(), "application/json");
+    });
     server.Get(R"(/(\w+))",[&](const Request& req, Response& res){
         string shortUrl = req.matches[1];
 
@@ -327,6 +401,7 @@ int main(int argc, char const *argv[]){
             }
         }
     });
+
     cout<<"Server listening on port 8000\n";
     server.listen("localhost", 8000);
     sqlite3_close(DB);

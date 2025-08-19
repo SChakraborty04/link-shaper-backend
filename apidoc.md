@@ -82,6 +82,33 @@ current hosted <server_ip>: 34.131.130.95
 ```
 
 ---
+### 5. Get All URLs for User
+
+**GET** `/allurls`
+
+**Headers:**
+- `Authorization: Bearer <JWT token>`
+
+**Response:**
+```json
+{
+  "urls": [
+    {
+      "shortUrl": "<short_url>",
+      "longUrl": "<long_url>",
+      "visits": <number_of_visits>
+    },
+    ...
+  ],
+  "status": 200
+}
+```
+
+- Returns all short URLs created by the authenticated user, with their original URLs and visit counts.
+- Returns `401` if the JWT is missing or invalid.
+- Returns `404` if the user is not found.
+- Returns `500` for database errors.
+---
 
 ## Authentication
 
