@@ -21,8 +21,7 @@ A simple, secure, and fast URL shortener backend built in C++ using [cpp-httplib
  - Demo Password: 123456
 ---
 ### Demo Backend
- - 
- https://shortapi.sandipanchakraborty.site
+ - Hosted API: https://shortapi.sandipanchakraborty.site
 ---
 
 ## Build Instructions
