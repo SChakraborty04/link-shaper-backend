@@ -10,11 +10,11 @@
 
 #include <regex>
 #include "httplib.h"
-#include "nlohmann/json.hpp"
-#include "sqllite/sqlite3.h"
+#include <nlohmann/json.hpp>
+#include "sqlite3.h"
 #include "schemas.h"
-#include "PicoSHA2-master/picosha2.h"
-#include "jwt-cpp-master/include/jwt-cpp/jwt.h"
+#include "picosha2.h"
+#include <jwt-cpp/jwt.h>
 
 using namespace std;
 using namespace httplib;
