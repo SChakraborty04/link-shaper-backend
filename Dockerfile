@@ -27,6 +27,7 @@ RUN mkdir sqllite && \
     cp sqlite-amalgamation-3490100/sqlite3.h sqllite/
 
 COPY shortenurl.cpp .
+COPY schemas.h .
 
 # Build sqlite
 RUN gcc -c -I./sqllite ./sqllite/sqlite3.c -o ./sqllite/sqlite3.o
