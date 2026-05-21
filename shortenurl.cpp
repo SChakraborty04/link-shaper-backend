@@ -1,5 +1,4 @@
-// Define Windows 10 as minimum target version
-#define _WIN32_WINNT 0x0A00
+
 
 #include <iostream>
 #include <cstdlib>
@@ -8,8 +7,7 @@
 #include <map>
 #include <algorithm>
 #include <unordered_map>
-#include <winsock2.h>
-#include <windows.h>
+
 #include <regex>
 #include "httplib.h"
 #include "nlohmann/json.hpp"

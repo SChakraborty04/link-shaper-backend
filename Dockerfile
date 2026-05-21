@@ -3,6 +3,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y \
+    gcc \
     g++ \
     make \
     git \
@@ -28,7 +29,7 @@ RUN mkdir sqllite && \
 COPY shortenurl.cpp .
 
 # Build sqlite
-RUN g++ -c -I./sqllite ./sqllite/sqlite3.c -o ./sqllite/sqlite3.o
+RUN gcc -c -I./sqllite ./sqllite/sqlite3.c -o ./sqllite/sqlite3.o
 
 # Build application
 RUN g++ \
