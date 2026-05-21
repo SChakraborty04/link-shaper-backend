@@ -2,6 +2,7 @@
 #define _WIN32_WINNT 0x0A00
 
 #include <iostream>
+#include <cstdlib>
 #include <string>
 #include <vector>
 #include <map>
@@ -58,10 +59,13 @@ void populate_map(sqlite3* DB){
 
 int main(int argc, char const *argv[]){
     Server server;
+    const char* jwtSecret = getenv("JWT_SECRET");
 
+    std::string secret = jwtSecret ? jwtSecret : "rgriuer4y6747643e37gheeh47r6";
     sqlite3* DB;
     int exit = 0;
-    exit = sqlite3_open("short.db",&DB);
+    const char* dbPath = getenv("DB_PATH");
+    exit=sqlite3_open(dbPath ? dbPath : "/app/data/short.db", &DB);
     if (exit) {
         cerr << "Error open DB " << sqlite3_errmsg(DB) << endl;
         return (-1);
@@ -161,7 +165,6 @@ int main(int argc, char const *argv[]){
         string hash = hash256_hex_string(password);
 
         json jsonResponse;
-
         string sql = "SELECT password FROM users WHERE email = ?;";
         sqlite3_stmt* stmt;
         if (sqlite3_prepare_v2(DB, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
@@ -173,7 +176,7 @@ int main(int argc, char const *argv[]){
                         .set_issuer("urlshortener")
                         .set_expires_at(std::chrono::system_clock::now() + std::chrono::hours{1})
                         .set_payload_claim("email", jwt::claim(email))
-                        .sign(jwt::algorithm::hs256{"PleaseShortMyURL!"});
+                        .sign(jwt::algorithm::hs256{jwtSecret});
                     jsonResponse["token"] = token;
                     jsonResponse["status"] = "success";
                     jsonResponse["message"] = "Login successful";
@@ -213,7 +216,7 @@ int main(int argc, char const *argv[]){
         try {
             auto decoded = jwt::decode(token);
             auto verifier = jwt::verify()
-                .allow_algorithm(jwt::algorithm::hs256{"PleaseShortMyURL!"})
+                .allow_algorithm(jwt::algorithm::hs256{jwtSecret})
                 .with_issuer("urlshortener");
             verifier.verify(decoded);
             userEmail = decoded.get_payload_claim("email").as_string();
@@ -298,7 +301,7 @@ int main(int argc, char const *argv[]){
         try {
             auto decoded = jwt::decode(token);
             auto verifier = jwt::verify()
-                .allow_algorithm(jwt::algorithm::hs256{"PleaseShortMyURL!"})
+                .allow_algorithm(jwt::algorithm::hs256{jwtSecret})
                 .with_issuer("urlshortener");
             verifier.verify(decoded);
             userEmail = decoded.get_payload_claim("email").as_string();
@@ -403,7 +406,7 @@ int main(int argc, char const *argv[]){
     });
 
     cout<<"Server listening on port 8000\n";
-    server.listen("localhost", 8000);
+    server.listen("0.0.0.0", 8000);
     sqlite3_close(DB);
     return 0;
 }
